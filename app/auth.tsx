@@ -47,6 +47,18 @@ export default function Auth() {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data.user) {
+          // Verify profile exists (if deleted, prevent automatic resurrection)
+          const { data: profileCheck } = await supabase
+            .from('profiles')
+            .select('id, avatar_id')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+          if (!profileCheck) {
+            await supabase.auth.signOut();
+            throw new Error('This account was deleted. Please tap "Sign Up" below to register a fresh account.');
+          }
+
           const profile = await getOrCreateProfile(data.user.id, email);
           await syncDailyLoginStreak(data.user.id);
           // Check if avatar is set

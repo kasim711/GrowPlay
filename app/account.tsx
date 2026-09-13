@@ -145,18 +145,18 @@ export default function AccountScreen() {
                     setDeletingAccount(true);
                     try {
                       if (user) {
-                        // 1. Try deleting from auth.users via RPC
+                        // 1. Wipe application tables first
+                        await supabase.from('trades').delete().eq('user_id', user.id);
+                        await supabase.from('holdings').delete().eq('user_id', user.id);
+                        await supabase.from('lesson_progress').delete().eq('user_id', user.id);
+                        await supabase.from('profiles').delete().eq('id', user.id);
+
+                        // 2. Delete from auth.users via RPC
                         try {
                           await supabase.rpc('delete_user');
                         } catch (rpcErr) {
                           console.log('RPC delete_user fallback:', rpcErr);
                         }
-
-                        // 2. Wipe application tables
-                        await supabase.from('trades').delete().eq('user_id', user.id);
-                        await supabase.from('holdings').delete().eq('user_id', user.id);
-                        await supabase.from('lesson_progress').delete().eq('user_id', user.id);
-                        await supabase.from('profiles').delete().eq('id', user.id);
 
                         // 3. Complete sign out
                         await supabase.auth.signOut();
