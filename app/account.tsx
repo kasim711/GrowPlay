@@ -109,9 +109,10 @@ export default function AccountScreen() {
               'avatar_id',
               'username',
               'growplay_arena_joined',
+              'onboarding_done',
             ]);
             Alert.alert('Logged Out', 'You have been logged out successfully.');
-            router.replace('/(tabs)/' as any);
+            router.replace('/auth' as any);
           } catch (e: any) {
             Alert.alert('Error', e.message || 'Logout failed');
           } finally {
@@ -144,22 +145,26 @@ export default function AccountScreen() {
                     setDeletingAccount(true);
                     try {
                       if (user) {
+                        // 1. Try deleting from auth.users via RPC
+                        try {
+                          await supabase.rpc('delete_user');
+                        } catch (rpcErr) {
+                          console.log('RPC delete_user fallback:', rpcErr);
+                        }
+
+                        // 2. Wipe application tables
                         await supabase.from('trades').delete().eq('user_id', user.id);
                         await supabase.from('holdings').delete().eq('user_id', user.id);
                         await supabase.from('lesson_progress').delete().eq('user_id', user.id);
                         await supabase.from('profiles').delete().eq('id', user.id);
+
+                        // 3. Complete sign out
                         await supabase.auth.signOut();
                       }
-                      await AsyncStorage.multiRemove([
-                        'completed_lessons',
-                        'total_xp',
-                        'streak',
-                        'avatar_id',
-                        'username',
-                        'growplay_arena_joined',
-                      ]);
+                      // 4. Wipe all local storage
+                      await AsyncStorage.clear();
                       Alert.alert('Account Deleted', 'Your account and data have been permanently removed.');
-                      router.replace('/(tabs)/' as any);
+                      router.replace('/auth' as any);
                     } catch (e: any) {
                       Alert.alert('Error', e.message || 'Failed to delete account');
                     } finally {
