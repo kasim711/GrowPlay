@@ -47,18 +47,6 @@ export default function Auth() {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data.user) {
-          // Verify profile exists (if deleted, prevent automatic resurrection)
-          const { data: profileCheck } = await supabase
-            .from('profiles')
-            .select('id, avatar_id')
-            .eq('id', data.user.id)
-            .maybeSingle();
-
-          if (!profileCheck) {
-            await supabase.auth.signOut();
-            throw new Error('This account was deleted. Please tap "Sign Up" below to register a fresh account.');
-          }
-
           const profile = await getOrCreateProfile(data.user.id, email);
           await syncDailyLoginStreak(data.user.id);
           // Check if avatar is set
@@ -71,12 +59,28 @@ export default function Auth() {
         }
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+        if (error) {
+          // If already registered in auth, sign in and ensure profile is active
+          if (error.message.toLowerCase().includes('already registered')) {
+            const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
+            if (!loginErr && loginData.user) {
+              const profile = await getOrCreateProfile(loginData.user.id, email);
+              await syncDailyLoginStreak(loginData.user.id);
+              if (profile && profile.avatar_id) {
+                await AsyncStorage.setItem('avatar_id', profile.avatar_id);
+                router.replace('/(tabs)');
+              } else {
+                router.replace('/avatar-select');
+              }
+              return;
+            }
+          }
+          throw error;
+        }
         if (data.user) {
           await getOrCreateProfile(data.user.id, email);
           await syncDailyLoginStreak(data.user.id);
         }
-        router.replace('/username');
       }
     } catch (e: any) {
       setError(e.message);
