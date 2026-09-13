@@ -86,7 +86,7 @@ export default function TermsScreen() {
         {/* Footer */}
         <View style={styles.footerBox}>
           <Text style={styles.footerText}>
-            Questions regarding our terms? Reach out to support@growplay.app
+            Questions regarding our terms? Reach out to upthrivetechnologies@gmail.com
           </Text>
         </View>
 

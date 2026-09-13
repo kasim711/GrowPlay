@@ -99,7 +99,7 @@ export default function PrivacyScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>6. Contact Information</Text>
           <Text style={styles.paragraph}>
-            If you have questions about this policy or our data practices, please email our privacy team at privacy@growplay.app.
+            If you have questions about this policy or our data practices, please email our privacy team at upthrivetechnologies@gmail.com.
           </Text>
         </View>
 
