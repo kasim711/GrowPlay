@@ -22,13 +22,13 @@ const STOCK_NAMES: Record<string, string> = {
   WIPRO: 'Wipro Ltd.',
   AXISBANK: 'Axis Bank Ltd.',
   MARUTI: 'Maruti Suzuki India',
-  TATAMOTORS: 'Tata Motors Ltd.',
+  TATAPOWER: 'Tata Power Company Ltd.',
   SUNPHARMA: 'Sun Pharmaceutical',
   ULTRACEMCO: 'UltraTech Cement Ltd.',
   TITAN: 'Titan Company Ltd.',
   BAJFINANCE: 'Bajaj Finance Ltd.',
   NESTLEIND: 'Nestle India Ltd.',
-  ZOMATO: 'Zomato Ltd.',
+  JIOFIN: 'Jio Financial Services Ltd.',
   IRCTC: 'Indian Railway Catering',
   HAL: 'Hindustan Aeronautics',
   ADANIENT: 'Adani Enterprises Ltd.',
@@ -41,7 +41,7 @@ const STOCK_ABOUT: Record<string, string> = {
   HDFCBANK: 'HDFC Bank Limited is an Indian banking and financial services company. It is one of the largest private sector banks in India by assets.',
   INFY: 'Infosys Limited is an Indian multinational IT company that provides business consulting, information technology and outsourcing services.',
   SBIN: 'State Bank of India is an Indian multinational public sector bank and financial services statutory body. It is the largest bank in India.',
-  ZOMATO: 'Zomato is an Indian multinational restaurant aggregator and food delivery company. It provides information and menus of restaurants and also offers home delivery.',
+  JIOFIN: 'Jio Financial Services Limited is a leading Indian non-banking financial company offering digital payments, insurance, asset management, and consumer lending solutions.',
 };
 
 export default function StockDetail() {
