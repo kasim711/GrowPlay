@@ -182,7 +182,7 @@ export default function Auth() {
     }
   };
 
-  const handleSkip = () => router.replace('/username');
+  const handleSkip = () => router.replace('/(tabs)');
 
   return (
     <SafeAreaView style={styles.container}>
