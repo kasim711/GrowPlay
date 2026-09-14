@@ -49,6 +49,16 @@ export default function Auth() {
         if (data.user) {
           const profile = await getOrCreateProfile(data.user.id, email);
           await syncDailyLoginStreak(data.user.id);
+
+          const savedUsername = await AsyncStorage.getItem('username');
+          if (!profile?.username && !savedUsername) {
+            router.replace('/username');
+            return;
+          }
+          if (profile?.username) {
+            await AsyncStorage.setItem('username', profile.username);
+          }
+
           // Check if avatar is set
           if (profile && profile.avatar_id) {
             await AsyncStorage.setItem('avatar_id', profile.avatar_id);
@@ -60,12 +70,20 @@ export default function Auth() {
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
-          // If already registered in auth, sign in and ensure profile is active
+          // If already registered in auth, sign in and route to username/avatar
           if (error.message.toLowerCase().includes('already registered')) {
             const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
             if (!loginErr && loginData.user) {
               const profile = await getOrCreateProfile(loginData.user.id, email);
               await syncDailyLoginStreak(loginData.user.id);
+              const savedUsername = await AsyncStorage.getItem('username');
+              if (!profile?.username && !savedUsername) {
+                router.replace('/username');
+                return;
+              }
+              if (profile?.username) {
+                await AsyncStorage.setItem('username', profile.username);
+              }
               if (profile && profile.avatar_id) {
                 await AsyncStorage.setItem('avatar_id', profile.avatar_id);
                 router.replace('/(tabs)');
@@ -81,6 +99,8 @@ export default function Auth() {
           await getOrCreateProfile(data.user.id, email);
           await syncDailyLoginStreak(data.user.id);
         }
+        // Always go to /username to choose display name!
+        router.replace('/username');
       }
     } catch (e: any) {
       setError(e.message);
@@ -162,7 +182,7 @@ export default function Auth() {
     }
   };
 
-  const handleSkip = () => router.replace('/(tabs)');
+  const handleSkip = () => router.replace('/username');
 
   return (
     <SafeAreaView style={styles.container}>
