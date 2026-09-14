@@ -50,57 +50,66 @@ export default function Auth() {
           const profile = await getOrCreateProfile(data.user.id, email);
           await syncDailyLoginStreak(data.user.id);
 
-          const savedUsername = await AsyncStorage.getItem('username');
-          if (!profile?.username && !savedUsername) {
-            router.replace('/username');
-            return;
-          }
           if (profile?.username) {
             await AsyncStorage.setItem('username', profile.username);
           }
-
-          // Check if avatar is set
-          if (profile && profile.avatar_id) {
-            await AsyncStorage.setItem('avatar_id', profile.avatar_id);
-            router.replace('/(tabs)');
-          } else {
-            router.replace('/avatar-select');
+          if (profile?.avatar_url) {
+            await AsyncStorage.setItem('avatar_id', profile.avatar_url);
           }
         }
+        // Directly enter dashboard!
+        router.replace('/(tabs)');
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
-          // If already registered in auth, sign in and route to username/avatar
+          // If already registered in auth, sign in directly and go to dashboard
           if (error.message.toLowerCase().includes('already registered')) {
             const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
             if (!loginErr && loginData.user) {
               const profile = await getOrCreateProfile(loginData.user.id, email);
               await syncDailyLoginStreak(loginData.user.id);
-              const savedUsername = await AsyncStorage.getItem('username');
-              if (!profile?.username && !savedUsername) {
-                router.replace('/username');
-                return;
-              }
               if (profile?.username) {
                 await AsyncStorage.setItem('username', profile.username);
               }
-              if (profile && profile.avatar_id) {
-                await AsyncStorage.setItem('avatar_id', profile.avatar_id);
-                router.replace('/(tabs)');
-              } else {
-                router.replace('/avatar-select');
+              if (profile?.avatar_url) {
+                await AsyncStorage.setItem('avatar_id', profile.avatar_url);
               }
+              router.replace('/(tabs)');
               return;
             }
           }
           throw error;
         }
+
+        // Auto sign in to guarantee active session
+        if (!data.session) {
+          try {
+            await supabase.auth.signInWithPassword({ email, password });
+          } catch {
+            // Email confirmation might be required
+          }
+        }
+
         if (data.user) {
           await getOrCreateProfile(data.user.id, email);
           await syncDailyLoginStreak(data.user.id);
         }
-        // Always go to /username to choose display name!
-        router.replace('/username');
+
+        Alert.alert(
+          'Account Created! 🎉',
+          'You can now login with this email and password anytime.',
+          [
+            {
+              text: 'Set Username (Optional)',
+              onPress: () => router.replace('/username'),
+            },
+            {
+              text: 'Go to Dashboard →',
+              style: 'default',
+              onPress: () => router.replace('/(tabs)'),
+            },
+          ]
+        );
       }
     } catch (e: any) {
       setError(e.message);

@@ -34,7 +34,7 @@ export default function Username() {
           .update({ username: cleanUsername })
           .eq('id', data.user.id);
       }
-      router.replace('/avatar-select');
+      router.replace('/(tabs)');
     } catch (e: any) {
       setError(e.message);
     }
@@ -66,15 +66,24 @@ export default function Username() {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[styles.continueButton, loading && styles.buttonDisabled]}
-          onPress={handleContinue}
-          disabled={loading}
-        >
-          <Text style={styles.continueText}>
-            {loading ? 'Saving...' : 'Continue'}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ gap: 12 }}>
+          <TouchableOpacity
+            style={[styles.continueButton, loading && styles.buttonDisabled]}
+            onPress={handleContinue}
+            disabled={loading}
+          >
+            <Text style={styles.continueText}>
+              {loading ? 'Saving...' : 'Continue to Dashboard →'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={() => router.replace('/(tabs)')}
+          >
+            <Text style={styles.skipText}>Skip for now</Text>
+          </TouchableOpacity>
+        </View>
 
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -138,5 +147,13 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 17,
     fontWeight: 'bold',
+  },
+  skipButton: {
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  skipText: {
+    color: '#888',
+    fontSize: 15,
   },
 });
