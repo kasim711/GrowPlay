@@ -232,6 +232,11 @@ export default function Auth() {
               autoCapitalize="none"
             />
           </View>
+          {!isLogin && (
+            <Text style={styles.emailRewardNote}>
+              🎁 Ensure you enter your correct email — exciting rewards are coming in the future!
+            </Text>
+          )}
 
           {/* Password */}
           <View style={styles.passwordRow}>
@@ -571,6 +576,14 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#fff',
     fontSize: 15,
+  },
+  emailRewardNote: {
+    color: '#00E676',
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 14,
+    lineHeight: 16,
+    paddingHorizontal: 4,
   },
   passwordRow: {
     flexDirection: 'row',
