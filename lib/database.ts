@@ -253,7 +253,7 @@ export const getOrCreateProfile = async (userId: string, email: string) => {
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     // Email update karo agar missing hai
@@ -263,7 +263,10 @@ export const getOrCreateProfile = async (userId: string, email: string) => {
         .update({ email, last_active: new Date().toISOString().split('T')[0] })
         .eq('id', userId);
     }
-    return existing;
+    return {
+      ...existing,
+      avatar_id: existing.avatar_id || existing.avatar_url,
+    };
   }
 
   const { data, error } = await supabase
@@ -275,14 +278,20 @@ export const getOrCreateProfile = async (userId: string, email: string) => {
       virtual_balance: 1000000,
       xp: 0,
       streak: 0,
-      avatar_id: null,
+      avatar_url: null,
       last_active: new Date().toISOString().split('T')[0],
     })
     .select()
     .single();
 
   if (error) console.log('Profile create error:', error);
-  return data;
+  if (data) {
+    return {
+      ...data,
+      avatar_id: data.avatar_id || data.avatar_url,
+    };
+  }
+  return null;
 };
 
 export const getProfile = async (userId: string) => {
@@ -290,19 +299,31 @@ export const getProfile = async (userId: string) => {
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single();
-  return data;
+    .maybeSingle();
+  if (data) {
+    return {
+      ...data,
+      avatar_id: data.avatar_id || data.avatar_url,
+    };
+  }
+  return null;
 };
 
 export const updateAvatar = async (userId: string, avatarId: string) => {
   const { data, error } = await supabase
     .from('profiles')
-    .update({ avatar_id: avatarId })
+    .update({ avatar_url: avatarId })
     .eq('id', userId)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) console.log('Avatar update error:', error);
+  if (data) {
+    return {
+      ...data,
+      avatar_id: data.avatar_id || data.avatar_url,
+    };
+  }
   return data;
 };
 
@@ -477,7 +498,12 @@ export const placeTrade = async (
   price: number
 ) => {
   const total = quantity * price;
-  const profile = await getProfile(userId);
+  let profile = await getProfile(userId);
+  if (!profile) {
+    const { data: authData } = await supabase.auth.getUser();
+    const userEmail = authData?.user?.email || 'trader@growplay.app';
+    profile = await getOrCreateProfile(userId, userEmail);
+  }
   if (!profile) return { error: 'Profile not found' };
 
   if (tradeType === 'BUY' && profile.virtual_balance < total) {

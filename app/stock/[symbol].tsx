@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
-import { placeTrade, getProfile, updateXP } from '@/lib/database';
+import { placeTrade, getProfile, getOrCreateProfile, updateXP } from '@/lib/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import InteractiveStockChart from '@/components/InteractiveStockChart';
 
@@ -72,7 +72,10 @@ export default function StockDetail() {
     const { data } = await supabase.auth.getUser();
     if (data?.user) {
       setUserId(data.user.id);
-      const profile = await getProfile(data.user.id);
+      let profile = await getProfile(data.user.id);
+      if (!profile) {
+        profile = await getOrCreateProfile(data.user.id, data.user.email || '');
+      }
       if (profile) setBalance(profile.virtual_balance);
     }
   };

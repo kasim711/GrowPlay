@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import NavHeader from '@/components/NavHeader';
-import { getHoldings, placeTrade, updateXP } from '@/lib/database';
+import { getHoldings, placeTrade, updateXP, getProfile, getOrCreateProfile } from '@/lib/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
@@ -267,15 +267,15 @@ export default function Trade() {
     const { data } = await supabase.auth.getUser();
     if (data?.user) {
       setUserId(data.user.id);
-      const { data: p } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
+      let p = await getProfile(data.user.id);
+      if (!p) {
+        p = await getOrCreateProfile(data.user.id, data.user.email || '');
+      }
       if (p) {
         setProfile(p);
         const validXP = Math.max(0, p.xp ?? 0);
         setXp(validXP);
+        setPortfolio(prev => ({ ...prev, balance: p.virtual_balance ?? 1000000 }));
         await AsyncStorage.setItem('total_xp', validXP.toString());
       }
       await loadPortfolio(data.user.id);

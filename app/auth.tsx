@@ -101,7 +101,7 @@ export default function Auth() {
       const { error } = await supabase.auth.resetPasswordForEmail(targetEmail);
       if (error) throw error;
       setForgotMessage(
-        '✉️ Password reset instructions sent! Check your email inbox (and spam folder) for the reset link or 6-digit recovery code.'
+        '✉️ Password reset instructions sent! Check your email inbox (and spam folder) for the reset link or 8-digit recovery code.'
       );
       setForgotStep('verify');
     } catch (e: any) {
@@ -113,7 +113,7 @@ export default function Auth() {
 
   const handleVerifyAndReset = async () => {
     if (!otpCode.trim()) {
-      setForgotError('Please enter the 6-digit recovery code from your email.');
+      setForgotError('Please enter the 8-digit recovery code from your email.');
       return;
     }
     if (!newPassword || newPassword.length < 6) {
@@ -380,12 +380,12 @@ export default function Auth() {
                     />
                   </View>
 
-                  <Text style={styles.modalInputLabel}>6-DIGIT RECOVERY OTP</Text>
+                  <Text style={styles.modalInputLabel}>8-DIGIT RECOVERY OTP</Text>
                   <View style={styles.inputWrapper}>
                     <Ionicons name="shield-outline" size={18} color="#555" style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { letterSpacing: 4, fontWeight: 'bold' }]}
-                      placeholder="123456"
+                      placeholder="12345678"
                       placeholderTextColor="#444"
                       value={otpCode}
                       onChangeText={setOtpCode}

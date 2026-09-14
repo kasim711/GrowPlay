@@ -175,10 +175,12 @@ export default function League() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, email, xp, total_pnl, streak, avatar_id')
+        .select('id, username, email, xp, total_pnl, streak, avatar_url')
         .order('xp', { ascending: false })
         .limit(100);
-      if (data) setLeaderboard(data);
+      if (data) {
+        setLeaderboard(data.map((u: any) => ({ ...u, avatar_id: u.avatar_id || u.avatar_url })));
+      }
     } catch (e) {
       console.log('Error loading real leaderboard:', e);
     }

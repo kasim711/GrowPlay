@@ -28,7 +28,7 @@ export default function AvatarSelect() {
       if (data?.user) {
         await supabase
           .from('profiles')
-          .update({ avatar_id: selectedId })
+          .update({ avatar_url: selectedId })
           .eq('id', data.user.id);
       }
 

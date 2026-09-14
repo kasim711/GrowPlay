@@ -2,7 +2,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { getProfile, syncDailyLoginStreak } from '@/lib/database';
+import { getProfile, getOrCreateProfile, syncDailyLoginStreak } from '@/lib/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -91,7 +91,10 @@ export default function Home() {
     setStreak(streakResult.streak);
 
     if (data?.user) {
-      const p = await getProfile(data.user.id);
+      let p = await getProfile(data.user.id);
+      if (!p) {
+        p = await getOrCreateProfile(data.user.id, data.user.email || '');
+      }
       if (p) {
         setProfile(p);
         const validXP = Math.max(0, p.xp ?? 0);
